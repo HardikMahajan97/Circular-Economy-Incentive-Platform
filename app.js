@@ -3,16 +3,21 @@ const app = express();
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import passport from "passport";
-import passportLocalMongoose from "passport-local-mongoose";
 import session from "express-session";
 import mongoStore from "connect-mongo";
 import LocalStrategy from "passport-local";
-import twilio from "twilio";
-import {v4 as uuidv4} from "uuid";
+import passportLocalMongoose from "passport-local-mongoose";
+
 import cors from 'cors';
+dotenv.config();
+
+/****************File imports******************/
+import User from "./models/User.model.js";
+import userRoute from "./routes/user.route.js";
 
 
-const dbUrl = process.env.MONGO_URI;
+/****************Database connection*************************/
+const dbUrl = process.env.MONGO_URI || 5000;
 
 // console.log(dbUrl);
 main() 
@@ -39,7 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 const store = mongoStore.create({
     mongoUrl : dbUrl,
     crypto: {
-        secret : process.env.SESSION_KEY,  //Encrypted by crypto.
+        secret : process.env.SESSION_KEY,
     },
     touchAfter : 24 * 3600,  // It is nothing but updating itself after how many time if session is not updated or database has not interacted with the server.
 });
@@ -65,14 +70,13 @@ app.use(
 //***************Passport Initialization****************
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(VendorInfo.authenticate()));
-// passport.use(VendorInfo.createStrategy());
-passport.serializeUser(VendorInfo.serializeUser());
-passport.deserializeUser(VendorInfo.deserializeUser());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 //**************************************************** */
 
-
+//************************** Routes ***************************/
 app.listen(port, () => {
     console.log(`Listening on ${port}`);
 });
@@ -81,4 +85,6 @@ app.get("/", (req, res) => {
     console.log("Hey! Welcome to Circular Economy Incentive Platform!");
     res.send("Hey! Welcome to Circular Economy Incentive Platform!");
 });
+
+app.use("/user", userRoute);
 

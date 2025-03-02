@@ -11,10 +11,19 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cep_project": "file:",
     "connect-mongo": "^5.1.0",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "mongoose": "^8.11.0",
     "nodemon": "^3.1.9",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^8.0.0",
+    "twilio": "^5.4.5",
     "uuid": "^11.1.0"
   }
 }
