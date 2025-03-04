@@ -1,62 +1,56 @@
 import express from 'express';
 const app = express();
 import passport from "passport";
+import mongoStore from "connect-mongo";
+import LocalStrategy from "passport-local";
+import passportLocalMongoose from "passport-local-mongoose";
 import crypto from 'crypto';
 
 import User from "../models/User.model.js";
+import Vendor from "../models/Vendor.model.js";
 import otpModel from "../models/Otp.Model.js";
 import client from "../utils/twilioclient.js";
 import EcoPoints from "../models/EcoPoints.model.js";
 
+export const vendorSignup = async (req, res) => {
+    try{
+        const {username, password, vendorType, Name, organisation, contact, address, city, email} = req.body;
 
-export const userSignup = async (req, res) => {
-    const {Name, email, username, contact, age, password, city} = req.body;
+        if(!username || !password || !vendorType || !Name || !organisation || !contact || !address || !city || !email){
+            return res.status(401).json({success:false, message:"Bad gateway, Please enter all the details!"});
+        }
+        const registerVendor = new Vendor({username, vendorType, Name, organisation, contact, address, city, email});
+        const registeredVendor = await Vendor.register(registerVendor, password);
+        console.log("Registered User:", registeredVendor);
 
-    if(!Name || !email || !username || !contact || !age || !password || !city){
-        return res.status(400).json({success: false, message:"User Not listed properly!"});
-    }
-    try {
-        const newUser = new User({Name, email, username, contact, age, city});
-        console.log("New User:", newUser);
-
-        const registeredUser = await User.register(newUser, password);
-        console.log("Registered User:", registeredUser);
-
-        const totalUsers = await User.countDocuments();
-
-        req.login(registeredUser, async (err) => {
+        req.login(registeredVendor, async (err) => {
             if(err){
                 console.error("Login error:", err);
                 return res.status(500).json({success: false, message: "Error during login", error: err.message});
             }
 
-            const user = await User.findOne({username:username});
-            const id = user._id;
-            const initEcoPoint = new EcoPoints({
-                points:100,
-                userId:id,
-            });
-            await initEcoPoint.save();
-            const initialPoints = initEcoPoint.points;
-
-            return res.status(200).json({success: true, data: {registeredUser, id, initialPoints}});
+            const vendor = await Vendor.findOne({username:username});
+            const id = vendor._id;
+            return res.status(200).json({success: true, data: {registeredVendor, id}});
         });
-    }
-    catch(e) {
-        console.error("Registration error:", e);
-        return res.status(500).json({success: false, message: "Internal Server Error", error: e.message});
-    }
-};
 
-export const userLogin = async (req, res, next) => {
+    }catch(e){
+        return res.status(500).json({success:false, message:`Some error occurred on our side! It says ${e.message}`});
+    }
+}
+
+export const vendorLogin = async (req, res, next) => {
     const {username, password} = req.body;
 
     if(!username || !password){
-        return res.status(404).json({success:false, message:"Enter all the fields"});
+        return res.status(401).json({success:false, message:"Bad gateway! Enter all the fields"});
     }
 
     passport.authenticate("local", async (err, user, info) => {
 
+        console.log("Passport Auth Error:", err);
+        console.log("Passport Auth User:", user);
+        console.log("Passport Info:", info);
         if (err) {
             // Handle error if there is any during authentication
             return res.status(500).json({ success: false, message: "Internal server error" });
@@ -76,27 +70,21 @@ export const userLogin = async (req, res, next) => {
 
             // Authentication successful
             //redirect the home page or the required page here.
-            const user = await User.findOne({username:username});
-            const id = user._id;
-
-            const getPoints = await EcoPoints.findOne({userId:id});
-            const updatedPoints = 10 + getPoints.points;
-            const updatedData = await EcoPoints.findByIdAndUpdate(getPoints._id, {points:updatedPoints}, { new: true, runValidators: true });
-
-            console.log(`Your updated points are : ${updatedData} And your updated database points are : ${updatedData}`);
+            const vendor = await Vendor.findOne({username:username});
+            const id = vendor._id;
             return res.status(200).json({id});
         });
     })(req, res, next);
-};
+}
 
 export const validateAndGenerateOtp = async(req, res) => {
     try {
         const {contact} = req.body;
-        const checkPhone = await User.findOne({contact:contact});
+        const checkPhone = await Vendor.findOne({contact:contact});
         if(!checkPhone){
             return res.status(404).json({
                 success:false,
-                message:"user not found"
+                message:"vendor not found"
             });
         }
 
@@ -124,41 +112,14 @@ export const validateAndGenerateOtp = async(req, res) => {
     }
 };
 
-export const verifyOtp = async (req, res) => {
-    try{
-        const {Otp} = req.body;
-        const otpRecord = await otpModel.findOne({
-            Otp: Otp,
-            isUsed: false
-        });
-
-        if (!otpRecord) {
-            throw new Error('Invalid or expired OTP');
-        }
-
-        // Check expiration
-        if (Date.now() > otpRecord.expiry) {
-            throw new Error('OTP has expired');
-        }
-
-        // Mark OTP as used
-        otpRecord.isUsed = true;
-        await otpRecord.save();
-
-        return res.status(200).json({success:true, data:otpRecord});
-    }catch(e){
-        return res.json({message:`${e.message}`});
-    }
-};
-
 export const changePassword = async (req, res, next) => {
     const {username, newPassword, confirmPassword} = req.body;
 
     try{
         console.log('Reached Change Password')
-        const user = await User.findOne({username: username});
+        const vendor = await Vendor.findOne({username: username});
 
-        if(!user){
+        if(!vendor){
             return res.status(404).json({message:`Internal Server Error`});
         }
 
@@ -166,9 +127,9 @@ export const changePassword = async (req, res, next) => {
             return res.status(400).json({message:`Bad Request, Enter the correct password in both fields, and try again!`});
         }
 
-        await user.setPassword(newPassword);
+        await vendor.setPassword(newPassword);
 
-        await user.save();
+        await vendor.save();
 
         req.login(user, async (err) => {
             if (err) {
@@ -178,14 +139,14 @@ export const changePassword = async (req, res, next) => {
 
             //Authentication successful
             //redirect the home page or the required page here.
-            const user = await User.findOne({username:username});
-            const userId = user._id;
+            const vendor = await Vendor.findOne({username:username});
+            const vendorId = vendor._id;
             return res.status(200).json({
                 success: true,
                 message: "Password reset successful. You are now logged in.",
-                user: {
-                    id: user._id,
-                    username: user.username,
+                vendor: {
+                    id: vendor._id,
+                    username: vendor.username,
                 },
             });
         });
@@ -199,17 +160,17 @@ export const updateUserInfo = async (req, res) => {
     try{
         const {id} = req.params;
 
-        const user = await User.findById(id);
-        if(!user) return res.status(404).json({success:false, message: "User not found"});
+        const vendor = await Vendor.findById(id);
+        if(!vendor) return res.status(404).json({success:false, message: "Vendor not found"});
 
-        const updatedUserInfo = await User.findByIdAndUpdate(
+        const updateVendorInfo = await Vendor.findByIdAndUpdate(
             id,
             { ...req.body },
             { new: true, runValidators: true }
 
         );
-        console.log(updatedUserInfo);
-        return res.status(200).json({updatedUserInfo});
+        console.log(updateVendorInfo);
+        return res.status(200).json({updateVendorInfo});
     }
     catch(err){
         return res.status(500).json({success:false, message: err.message});

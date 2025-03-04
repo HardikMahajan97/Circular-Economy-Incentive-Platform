@@ -1,23 +1,17 @@
 import express from 'express';
+const app = express();
+const router = express.Router({mergeParams:true});
 
-const router = express.Router({mergeParams: true});
-import {
-    userSignup,
-    userLogin,
-    updateUserInfo,
-    validateAndGenerateOtp,
-    verifyOtp,
-    changePassword
-} from "../controllers/user.controller.js";
+import {vendorSignup, vendorLogin, changePassword, updateUserInfo, validateAndGenerateOtp,} from "../controllers/vendor.controller.js";
+import {verifyOtp} from "../controllers/user.controller.js";
 
 router
     .route("/signup")
-    .post(userSignup);
+    .post(vendorSignup);
 
 router
     .route("/login")
-    .post(userLogin);
-
+    .post(vendorLogin);
 
 router
     .route("/update/:id")
@@ -33,5 +27,6 @@ router
 router
     .route("/changePassword")
     .post(changePassword);
+
 
 export default router;

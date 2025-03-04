@@ -7,13 +7,15 @@ import session from "express-session";
 import mongoStore from "connect-mongo";
 import LocalStrategy from "passport-local";
 import passportLocalMongoose from "passport-local-mongoose";
-
 import cors from 'cors';
 dotenv.config();
 
 /****************File imports******************/
 import User from "./models/User.model.js";
+import Vendor from "./models/Vendor.model.js";
 import userRoute from "./routes/user.route.js";
+import activityRoutes from "./routes/activity.route.js";
+import vendorRoutes from "./routes/vendor.route.js";
 
 
 /****************Database connection*************************/
@@ -27,8 +29,14 @@ main()
     .catch((err) => {
         console.log(err);
     });
-async function main() { 
-    await mongoose.connect(dbUrl);  
+async function main() {
+
+    try{
+        await mongoose.connect(dbUrl);
+    }
+    catch(err){
+        console.log(`Your error is due to database connection failure: ${err}`);
+    }
 }
 
 //************************************************************* */
@@ -74,11 +82,15 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+passport.use(new LocalStrategy(Vendor.authenticate()));
+passport.serializeUser(Vendor.serializeUser());
+passport.deserializeUser(Vendor.deserializeUser());
+
 //**************************************************** */
 
 //************************** Routes ***************************/
 app.listen(port, () => {
-    console.log(`Listening on ${port}`);
+    console.log(`Listening on port ${port}`);
 });
 
 app.get("/", (req, res) => {
@@ -87,4 +99,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/user", userRoute);
+
+app.use("/:id/activity", activityRoutes);
+
+app.use("/vendor", vendorRoutes);
 

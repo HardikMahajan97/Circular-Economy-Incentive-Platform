@@ -23,6 +23,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^8.0.0",
+    "resend": "^4.1.2",
     "twilio": "^5.4.5",
     "uuid": "^11.1.0"
   }
