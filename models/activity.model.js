@@ -10,12 +10,18 @@ const activitySchema = new Schema({
         required: true,
     },
     weightOfMaterial : {
-        type:String,
+        type:Number,
         required:true,
     },
     quantity:{
         type:Number,
         required:true,
+    },
+    paymentMode:{
+        type:String,
+        enum:["online", "Online", "Offline", "offline"],
+        required:true,
+        default:"offline",
     },
     userId:{
         type:mongoose.Schema.Types.ObjectId,
@@ -30,7 +36,6 @@ const activitySchema = new Schema({
     productId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Product",
-        required:true,
     },
     createdAt:{
         type:Date,

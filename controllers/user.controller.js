@@ -55,7 +55,7 @@ export const userLogin = async (req, res, next) => {
         return res.status(404).json({success:false, message:"Enter all the fields"});
     }
 
-    passport.authenticate("local", async (err, user, info) => {
+    passport.authenticate("user-local", async (err, user, info) => {
 
         if (err) {
             // Handle error if there is any during authentication

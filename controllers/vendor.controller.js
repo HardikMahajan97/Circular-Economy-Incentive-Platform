@@ -46,11 +46,8 @@ export const vendorLogin = async (req, res, next) => {
         return res.status(401).json({success:false, message:"Bad gateway! Enter all the fields"});
     }
 
-    passport.authenticate("local", async (err, user, info) => {
+    passport.authenticate("vendor-local", async (err, user, info) => {
 
-        console.log("Passport Auth Error:", err);
-        console.log("Passport Auth User:", user);
-        console.log("Passport Info:", info);
         if (err) {
             // Handle error if there is any during authentication
             return res.status(500).json({ success: false, message: "Internal server error" });

@@ -16,6 +16,7 @@ import Vendor from "./models/Vendor.model.js";
 import userRoute from "./routes/user.route.js";
 import activityRoutes from "./routes/activity.route.js";
 import vendorRoutes from "./routes/vendor.route.js";
+import sendEmail from "./utils/sendEmail.js";
 
 
 /****************Database connection*************************/
@@ -78,13 +79,21 @@ app.use(
 //***************Passport Initialization****************
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
 
-passport.use(new LocalStrategy(Vendor.authenticate()));
-passport.serializeUser(Vendor.serializeUser());
-passport.deserializeUser(Vendor.deserializeUser());
+passport.use("user-local", new LocalStrategy(User.authenticate()));
+
+passport.use("vendor-local", new LocalStrategy(Vendor.authenticate()));
+
+passport.serializeUser((entity, done) => {
+    done(null, { id: entity.id, type: entity.constructor.modelName });
+});
+
+passport.deserializeUser((obj, done) => {
+    const Model = obj.type === "User" ? User : Vendor;
+    Model.findById(obj.id)
+        .then(user => done(null, user))
+        .catch(err => done(err));
+});
 
 //**************************************************** */
 
@@ -100,7 +109,21 @@ app.get("/", (req, res) => {
 
 app.use("/user", userRoute);
 
-app.use("/:id/activity", activityRoutes);
+app.use("/activity/:userId", activityRoutes);
 
 app.use("/vendor", vendorRoutes);
 
+app.get("/send-email", async (req, res) => {
+
+    try{
+        const mail = await sendEmail(
+            "hardikmahajan97@gmail.com",
+            "Testing out",
+            "Test text for email"
+        );
+        return res.status(200).json({message:"Just check your mail"});
+    }catch(e){
+        return res.status(500).json({message:`Obviously some error. it says: ${err.message}`});
+    }
+
+})
