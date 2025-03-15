@@ -8,7 +8,7 @@ import {
     validateAndGenerateOtp,
     verifyOtp,
     changePassword
-} from "../controllers/user.controller.js";
+} from "../controllers/Customers/user.controller.js";
 
 router
     .route("/signup")

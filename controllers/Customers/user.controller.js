@@ -3,10 +3,10 @@ const app = express();
 import passport from "passport";
 import crypto from 'crypto';
 
-import User from "../models/User.model.js";
-import otpModel from "../models/Otp.Model.js";
-import client from "../utils/twilioclient.js";
-import EcoPoints from "../models/EcoPoints.model.js";
+import User from "../../models/User.model.js";
+import otpModel from "../../models/Otp.model.js";
+import client from "../../utils/twilioclient.js";
+import EcoPoints from "../../models/EcoPoints.model.js";
 
 
 export const userSignup = async (req, res) => {

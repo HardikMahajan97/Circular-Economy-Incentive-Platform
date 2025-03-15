@@ -6,20 +6,20 @@ import LocalStrategy from "passport-local";
 import passportLocalMongoose from "passport-local-mongoose";
 import crypto from 'crypto';
 
-import User from "../models/User.model.js";
-import Vendor from "../models/Vendor.model.js";
-import otpModel from "../models/Otp.Model.js";
-import client from "../utils/twilioclient.js";
-import EcoPoints from "../models/EcoPoints.model.js";
+import User from "../../models/User.model.js";
+import Vendor from "../../models/Vendor.model.js";
+import otpModel from "../../models/Otp.model.js";
+import client from "../../utils/twilioclient.js";
+import EcoPoints from "../../models/EcoPoints.model.js";
 
 export const vendorSignup = async (req, res) => {
     try{
-        const {username, password, vendorType, Name, organisation, contact, address, city, email} = req.body;
+        const {username, password, vendorType, Name, organisation, contact, address, city, email, location} = req.body;
 
-        if(!username || !password || !vendorType || !Name || !organisation || !contact || !address || !city || !email){
+        if(!username || !password || !vendorType || !Name || !organisation || !contact || !address || !city || !email || !location){
             return res.status(401).json({success:false, message:"Bad gateway, Please enter all the details!"});
         }
-        const registerVendor = new Vendor({username, vendorType, Name, organisation, contact, address, city, email});
+        const registerVendor = new Vendor({username, vendorType, Name, organisation, contact, address, city, email, location});
         const registeredVendor = await Vendor.register(registerVendor, password);
         console.log("Registered User:", registeredVendor);
 

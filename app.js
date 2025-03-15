@@ -10,7 +10,7 @@ import passportLocalMongoose from "passport-local-mongoose";
 import cors from 'cors';
 dotenv.config();
 
-/****************File imports******************/
+/*********************** File imports ************************/
 import User from "./models/User.model.js";
 import Vendor from "./models/Vendor.model.js";
 import userRoute from "./routes/user.route.js";
@@ -18,8 +18,7 @@ import activityRoutes from "./routes/activity.route.js";
 import vendorRoutes from "./routes/vendor.route.js";
 import sendEmail from "./utils/sendEmail.js";
 
-
-/****************Database connection*************************/
+/**************** Database connection ************************/
 const dbUrl = process.env.MONGO_URI || 5000;
 
 // console.log(dbUrl);
@@ -40,16 +39,14 @@ async function main() {
     }
 }
 
-//************************************************************* */
+//********************************************************** */
 let port = 5000;
-
 
 app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
 
-
-//*****************************Configure sessions******************
+//************************* Configure sessions *****************
 const store = mongoStore.create({
     mongoUrl : dbUrl,
     crypto: {
@@ -73,10 +70,8 @@ app.use(
         },
     })
 );
-//******************************************************************** */
 
-
-//***************Passport Initialization****************
+//************** Passport Initialization **********************
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -95,7 +90,7 @@ passport.deserializeUser((obj, done) => {
         .catch(err => done(err));
 });
 
-//**************************************************** */
+//*********************************************************** */
 
 //************************** Routes ***************************/
 app.listen(port, () => {
@@ -113,17 +108,22 @@ app.use("/activity/:userId", activityRoutes);
 
 app.use("/vendor", vendorRoutes);
 
-app.get("/send-email", async (req, res) => {
+// app.get("/send-email", async (req, res) => {
 
-    try{
-        const mail = await sendEmail(
-            "hardikmahajan97@gmail.com",
-            "Testing out",
-            "Test text for email"
-        );
-        return res.status(200).json({message:"Just check your mail"});
-    }catch(e){
-        return res.status(500).json({message:`Obviously some error. it says: ${err.message}`});
-    }
+//     try{
+//         const mail = await sendEmail(
+//             "hardikmahajan97@gmail.com",
+//             "Testing out",
+//             "Test text for email"
+//         );
+//         return res.status(200).json({message:"Just check your mail"});
+//     }catch(e){
+//         return res.status(500).json({message:`Obviously some error. it says: ${err.message}`});
+//     }
 
-})
+// });
+
+// app.all("*", (req,res,next) => {
+//     next(new ExpressError(404, "Page not found"));
+// });
+
