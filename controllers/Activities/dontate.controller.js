@@ -1,13 +1,10 @@
-import express from 'express';
-const app = express();
 import sendEmail from "../../utils/sendEmail.js"
 import User from "../../models/User.model.js";
 import Vendor from "../../models/Vendor.model.js";
 import Activity from "../../models/activity.model.js";
 import Product from "../../models/Product.model.js";
-import otpModel from "../../models/Otp.model.js";
-import client from "../../utils/twilioclient.js";
 import EcoPoints from "../../models/EcoPoints.model.js";
+// import CalculateEcoPoints from "../CalculateImpactMetrics.controller.js";
 
 
 
@@ -88,21 +85,6 @@ export const donateProducts = async (req, res) => {
             message:"Bad Gateway! Activity details were not provided, Please enter all of them correctly."
         });
 
-        //Check whether the quantity is valid or the activity on that product is already performed or not;
-        // if(product.isActivityDone || product.quantity < quantity){
-        //     return res.status(401).json({
-        //         success:false,
-        //         message:"Your product's activity is already completed, or you are demanding more quantity than the stock!"
-        //     });
-        // }
-        // //update the quantity of the product in database.
-        // const updatedQuantity = product.quantity - quantity;
-        // const updatedProduct = await Product.findByIdAndUpdate(
-        //     productId,
-        //     {quantity:updatedQuantity},
-        //     { new: true, runValidators: true }
-        // );,
-
         //Save the activity details in the database
         const activity = new Activity({
             weightOfMaterial,
@@ -122,7 +104,7 @@ export const donateProducts = async (req, res) => {
                 "There was a problem sending email to the user! Please try again, we are sorry for the inconvenience!"
         });
 
-        const impactMetrics = CalculateEcoPoints(weightOfMaterial, typeOfMaterial, quantity);
+        const impactMetrics = await CalculateEcoPoints(weightOfMaterial, typeOfMaterial, quantity);
 
         return res.status(200).json({
             success:true,

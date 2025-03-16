@@ -13,12 +13,12 @@ async function sendEmailToUser(user, product){
         user.email,
         "Your product is now at our platform! 🥳",
         "",
-        "<p>Hi "+user.name+",</p>\n" +
+        "<p>Hi "+user.Name+",</p>\n" +
         "\n" +
         "<p>We sincerely appreciate you for taking the initiative to list your product on our circular economy platform! Your contribution helps build a more sustainable future by promoting reuse, recycling, and responsible consumption. 🌍</p>\n" +
         "\n" +
         "<p><strong>Here are your product details:</strong><br>\n" +
-        "<strong>Name:</strong> "+product.productName+"<br>\n" +
+        "<strong>Name:</strong> "+product.Name+"<br>\n" +
         "<strong>Description:</strong> "+product.description+"<br>\n" +
         "<strong>Price:</strong> "+product.price+"<br>\n" +
         "<strong>Quantity:</strong> "+product.quantity+"</p>\n" +
@@ -44,13 +44,14 @@ export const addProduct = async(req, res) => {
             message:"User not found!"
         });
 
-        const {productName, description, images, price, quantity} = req.body;
-        if(!productName || !description || !images || !price || !quantity) return res.status(404).json({
+        const {Name, typeOfProduct, description, images, price, quantity} = req.body;
+        if(!Name || !typeOfProduct || !description || !images || !price || !quantity) return res.status(404).json({
             success:false,
             message:"Product details are incomplete! Please enter all details."
         });
 
-        const product = await new Product({productName, description, images, price, quantity, userId});
+        const product = new Product({Name, typeOfProduct, description, images, price, quantity, userId});
+        await product.save();
         if(!product) return res.status(401).json({message:"Error 401, Bad request Product not listed in server"});
 
         await sendEmailToUser(user, product);

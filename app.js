@@ -123,7 +123,7 @@ app.use("/vendor", vendorRoutes);
 
 // });
 
-// app.all("*", (req,res,next) => {
-//     next(new ExpressError(404, "Page not found"));
-// });
+app.all("*", (req,res,next) => {
+    return res.status(401).send("Bad request the page does not exist!");
+});
 

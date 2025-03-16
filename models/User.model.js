@@ -19,10 +19,27 @@ const userSchema = new Schema({
         type:Number,
         required:true,
     },
-    city:{
+    location:{
         type:String,
         required:true,
-    }
+    },
+    address:{
+        city:{
+            type:String,
+            required:true,
+        },
+        street:{
+            type:String,
+            required:true,
+        },
+        flatNumberOrBuildingName:{
+            type:String,
+            required:true,
+        },
+        landmark:{
+            type:String,
+        },
+    },
 
 });
 
