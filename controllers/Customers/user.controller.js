@@ -24,72 +24,72 @@ async function getEcoPoints(registeredUser){
        return err.message;
    }
 }
-export const userSignup = async (req, res) => {
-    const {
-        Name, email, username, contact, age, password,
-        location,
-        address: {
-            city,
-            street,
-            flatNumberOrBuildingName,
-            landmark = ""
-        } = {}
-    } = req.body;
-
-    if (!Name || !email || !username || !contact || !age || !password || !location || !city || !street || !flatNumberOrBuildingName) {
-        return res.status(400).json({ success: false, message: "User details are incomplete!" });
-    }
-
-    try {
-        const newUser = new User({
-            Name,
-            email,
-            username,
-            contact,
-            age,
+    export const userSignup = async (req, res) => {
+        const {
+            Name, email, username, contact, age, password,
             location,
             address: {
                 city,
                 street,
                 flatNumberOrBuildingName,
-                landmark
-            }
-        });
+                landmark = ""
+            } = {}
+        } = req.body;
 
-        console.log("New User:", newUser);
+        if (!Name || !email || !username || !contact || !age || !password || !location || !city || !street || !flatNumberOrBuildingName) {
+            return res.status(400).json({ success: false, message: "User details are incomplete!" });
+        }
 
-        const registeredUser = await User.register(newUser, password);
-        console.log("Registered User:", registeredUser);
-
-        req.login(registeredUser, async (err) => {
-            if (err) {
-                console.error("Login error:", err);
-                return res.status(500).json({ success: false, message: "Error during login", error: err.message });
-            }
-
-            const user = await User.findOne({ username: username });
-            const id = user._id;
-            console.log("User ID:", id);
-
-            const initEcoPoint = new EcoPoints({
-                points: 100,
-                userId: id,
+        try {
+            const newUser = new User({
+                Name,
+                email,
+                username,
+                contact,
+                age,
+                location,
+                address: {
+                    city,
+                    street,
+                    flatNumberOrBuildingName,
+                    landmark
+                }
             });
-            await initEcoPoint.save();
-            const initialPoints = initEcoPoint.points;
 
-            return res.status(200).json({
-                success: true,
-                message: "Signup and login successful!",
-                data: { id, initialPoints }
+            console.log("New User:", newUser);
+
+            const registeredUser = await User.register(newUser, password);
+            console.log("Registered User:", registeredUser);
+
+            req.login(registeredUser, async (err) => {
+                if (err) {
+                    console.error("Login error:", err);
+                    return res.status(500).json({ success: false, message: "Error during login", error: err.message });
+                }
+
+                const user = await User.findOne({ username: username });
+                const id = user._id;
+                console.log("User ID:", id);
+
+                const initEcoPoint = new EcoPoints({
+                    points: 100,
+                    userId: id,
+                });
+                await initEcoPoint.save();
+                const initialPoints = initEcoPoint.points;
+
+                return res.status(200).json({
+                    success: true,
+                    message: "Signup and login successful!",
+                    data: { id, initialPoints }
+                });
             });
-        });
 
-    } catch (e) {
-        console.error("Registration error:", e);
-        return res.status(500).json({ success: false, message: "Internal Server Error", error: e.message });
-    }
-};
+        } catch (e) {
+            console.error("Registration error:", e);
+            return res.status(500).json({ success: false, message: "Internal Server Error", error: e.message });
+        }
+    };
 
 
 export const userLogin = async (req, res, next) => {
