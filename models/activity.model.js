@@ -1,58 +1,59 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-import User from "./User.model.js";
-import Vendor from "./Vendor.model.js";
-
 const activitySchema = new Schema({
-    typeOfMaterial : {
+    activityType: {
+        type: String,
+        enum: ["Recycle", "Exchange", "Donation", "Buy", "Sell"],
+        required: true,
+    },
+    typeOfProduct: {
         type: String,
         required: true,
     },
-    weightOfMaterial : {
-        type:Number,
-        required:true,
+    weightOfMaterial: {
+        type: Number,
     },
-    quantity:{
-        type:Number,
-        required:true,
+    quantity: {
+        type: Number,
+        required: true,
     },
-    images:[
+    images: [
         {
-            type:String,
-            required:true,
-            default:"https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+            type: String,
+            required: true,
+            default: "https://images.pexels.com/photos/279906/pexels-photo-279906.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
         },
     ],
-    paymentMode:{
-        type:String,
-        enum:["online", "Online", "Offline", "offline"],
-        required:true,
-        default:"offline",
+    paymentMode: {
+        type: String,
+        enum: ["online", "offline"],
+        required: true,
+        default: "offline",
     },
-    userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
-    vendorId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Vendor",
-        required:true,
+    vendorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Vendor",
     },
-    productId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Product",
+    productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
     },
-    createdAt:{
-        type:Date,
-        default:Date.now
+    activityStatus: {
+        type: String,
+        enum: ["Pending", "Completed", "Cancelled"],
+        default: "Pending",
     },
-
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
 const Activity = mongoose.model("Activity", activitySchema);
-
 export default Activity;
-
-

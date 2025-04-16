@@ -9,44 +9,88 @@ import client from "../../utils/twilioclient.js";
 import EcoPoints from "../../models/EcoPoints.model.js";
 
 
+async function getEcoPoints(registeredUser){
+   try{
+       const user = await User.findById(registeredUser._id);
+       const id = user._id;
+       const initEcoPoint = new EcoPoints({
+           points:100,
+           userId:id,
+       });
+       await initEcoPoint.save();
+       const points = initEcoPoint.points;
+       return {points, id};
+   }catch(err){
+       return err.message;
+   }
+}
 export const userSignup = async (req, res) => {
-    const {Name, email, username, contact, age, password, city} = req.body;
+    const {
+        Name, email, username, contact, age, password,
+        location,
+        address: {
+            city,
+            street,
+            flatNumberOrBuildingName,
+            landmark = ""
+        } = {}
+    } = req.body;
 
-    if(!Name || !email || !username || !contact || !age || !password || !city){
-        return res.status(400).json({success: false, message:"User Not listed properly!"});
+    if (!Name || !email || !username || !contact || !age || !password || !location || !city || !street || !flatNumberOrBuildingName) {
+        return res.status(400).json({ success: false, message: "User details are incomplete!" });
     }
+
     try {
-        const newUser = new User({Name, email, username, contact, age, city});
+        const newUser = new User({
+            Name,
+            email,
+            username,
+            contact,
+            age,
+            location,
+            address: {
+                city,
+                street,
+                flatNumberOrBuildingName,
+                landmark
+            }
+        });
+
         console.log("New User:", newUser);
 
         const registeredUser = await User.register(newUser, password);
         console.log("Registered User:", registeredUser);
 
-        const totalUsers = await User.countDocuments();
-
         req.login(registeredUser, async (err) => {
-            if(err){
+            if (err) {
                 console.error("Login error:", err);
-                return res.status(500).json({success: false, message: "Error during login", error: err.message});
+                return res.status(500).json({ success: false, message: "Error during login", error: err.message });
             }
 
-            const user = await User.findOne({username:username});
+            const user = await User.findOne({ username: username });
             const id = user._id;
+            console.log("User ID:", id);
+
             const initEcoPoint = new EcoPoints({
-                points:100,
-                userId:id,
+                points: 100,
+                userId: id,
             });
             await initEcoPoint.save();
             const initialPoints = initEcoPoint.points;
 
-            return res.status(200).json({success: true, data: {registeredUser, id, initialPoints}});
+            return res.status(200).json({
+                success: true,
+                message: "Signup and login successful!",
+                data: { id, initialPoints }
+            });
         });
-    }
-    catch(e) {
+
+    } catch (e) {
         console.error("Registration error:", e);
-        return res.status(500).json({success: false, message: "Internal Server Error", error: e.message});
+        return res.status(500).json({ success: false, message: "Internal Server Error", error: e.message });
     }
 };
+
 
 export const userLogin = async (req, res, next) => {
     const {username, password} = req.body;
@@ -78,6 +122,8 @@ export const userLogin = async (req, res, next) => {
             //redirect the home page or the required page here.
             const user = await User.findOne({username:username});
             const id = user._id;
+
+            const updatePoints = await EcoPoints.findByIdAndUpdate()
 
             const getPoints = await EcoPoints.findOne({userId:id});
             const updatedPoints = 10 + getPoints.points;

@@ -10,6 +10,10 @@ const productSchema = new Schema({
         type:String,
         required:true,
     },
+    weightOfMaterial:{
+        type:String,
+        required:true,
+    },
     description:{
         type:String,
         required:true,
@@ -25,11 +29,12 @@ const productSchema = new Schema({
         type:Number,
         required:true,
         default:0,
+        min:0,
     },
-    isActivityDone:{
-        type:Boolean,
-        required:true,
-        default:false,
+    activityStatus: {
+        type: String,
+        enum: ["Available", "Pending", "Completed", "Unavailable"],
+        default: "Available",
     },
     quantity:{
         type:Number,

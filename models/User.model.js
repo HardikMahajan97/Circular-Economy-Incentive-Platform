@@ -10,6 +10,7 @@ const userSchema = new Schema({
     email:{
         type:String,
         required:true,
+        unique:true,
     },
     contact:{
         type:Number,
@@ -40,6 +41,10 @@ const userSchema = new Schema({
             type:String,
         },
     },
+    ecopointsId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"EcoPoints",
+    }
 
 });
 

@@ -78,9 +78,9 @@ export const donateProducts = async (req, res) => {
             message:"Error 404! Either User or Vendor was not found!"
         });
 
-        const {weightOfMaterial, typeOfMaterial, quantity, images} = req.body;
+        const {weightOfMaterial, typeOfProduct: typeOfProduct, quantity, images} = req.body;
 
-        if(!weightOfMaterial || !typeOfMaterial || !quantity || !images) return res.status(401).json({
+        if(!weightOfMaterial || !typeOfProduct || !quantity || !images) return res.status(401).json({
             success:false,
             message:"Bad Gateway! Activity details were not provided, Please enter all of them correctly."
         });
@@ -88,7 +88,7 @@ export const donateProducts = async (req, res) => {
         //Save the activity details in the database
         const activity = new Activity({
             weightOfMaterial,
-            typeOfMaterial,
+            typeOfProduct: typeOfProduct,
             quantity,
             images,
             userId,
@@ -96,7 +96,7 @@ export const donateProducts = async (req, res) => {
         });
         await activity.save();
 
-        const email = await sendEmailToUserAndVendor(user, vendor, typeOfMaterial, quantity);
+        const email = await sendEmailToUserAndVendor(user, vendor, typeOfProduct, quantity);
 
         if(!email) return res.status(500).json({
             success:false,
@@ -104,7 +104,7 @@ export const donateProducts = async (req, res) => {
                 "There was a problem sending email to the user! Please try again, we are sorry for the inconvenience!"
         });
 
-        const impactMetrics = await CalculateEcoPoints(weightOfMaterial, typeOfMaterial, quantity);
+        const impactMetrics = await CalculateEcoPoints(weightOfMaterial, typeOfProduct, quantity);
 
         return res.status(200).json({
             success:true,
